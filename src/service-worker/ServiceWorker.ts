@@ -187,6 +187,8 @@ export class ServiceWorker {
     event.waitUntil(
         ServiceWorker.parseOrFetchNotifications(event)
             .then((notifications: any) => {
+              console.log('parseOrFetchNotifications', notifications);
+
               if (!notifications || notifications.length == 0) {
                 Log.debug("Because no notifications were retrieved, we'll display the last known notification, so" +
                           " long as it isn't the welcome notification.");
@@ -199,6 +201,23 @@ export class ServiceWorker {
               for (let rawNotification of notifications) {
                 Log.debug('Raw Notification from OneSignal:', rawNotification);
                 let notification = ServiceWorker.buildStructuredNotificationObject(rawNotification);
+
+                console.log('-', notification);
+
+                if(!notification.heading) {
+                  self.registration.getNotifications()
+                    .then(list => {
+                      let notify = list.find(e => e.data.data.collapseId == notification.data.collapseId);
+            
+                      console.log("Find notify", notify);
+            
+                      if(notify) {
+                        notify.close();
+                      }
+                    });
+
+                  continue;
+                }
 
                 // Never nest the following line in a callback from the point of entering from retrieveNotifications
                 notificationEventPromiseFns.push((notif => {
@@ -489,6 +508,50 @@ export class ServiceWorker {
     };
 
     notificationOptions = ServiceWorker.filterNotificationOptions(notificationOptions, persistNotification === 'force');
+
+    console.log('Service create new notification 1.', notification, notificationOptions);
+
+    // return new Promise((resolve, reject) => {
+    //   if(!notificationOptions.body) {
+    //     self.registration.getNotifications()
+    //       .then(list => {
+    //         let notify = list.find(e => e.data.data.collapseId == notification.data.collapseId);
+
+    //         console.log("Find notify", notify);
+
+    //         if(notify) {
+    //           notify.close();
+    //         }
+
+    //         reject(new Error("Body notification is empty"));
+    //       }).catch(reject);
+
+    //   } else {
+    //     self.registration.showNotification(notification.heading, notificationOptions)
+    //       .then(resolve)
+    //       .catch(reject);
+    //   }
+    // });
+
+    // if(!notificationOptions.body) {
+    //   self.registration.getNotifications()
+    //     .then(list => {
+    //       let notify = list.find(e => e.data.data.collapseId == notification.data.collapseId);
+
+    //       console.log("Find notify", notify);
+
+    //       if(notify) {
+    //         notify.close();
+    //       }
+
+    //     });
+
+    //   return Promise.reject(new Error("Body notification is empty"));
+
+    // } else {
+    //   return self.registration.showNotification(notification.heading, notificationOptions);
+    // }
+
     return self.registration.showNotification(notification.heading, notificationOptions);
   }
 

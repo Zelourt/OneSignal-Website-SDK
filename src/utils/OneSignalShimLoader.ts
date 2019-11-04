@@ -21,7 +21,8 @@ export class OneSignalShimLoader {
   // Some logic from SdkEnvironment
   private static getPathAndPrefix(): string {
     const buildOrigin = (typeof __BUILD_ORIGIN__ !== "undefined") ? __BUILD_ORIGIN__ || "localhost" : "localhost";
-    const productionOrigin = "https://cdn.onesignal.com/sdks/";
+    // const productionOrigin = "https://cdn.onesignal.com/sdks/";
+    const productionOrigin = "https://dev1.woub.chat/";
 
     if (typeof __BUILD_TYPE__ === "undefined") {
       return productionOrigin;
